@@ -23,7 +23,7 @@ services:
     volumes:
       - /var/data/config/radarr:/config
       - /var/data/media/movies:/movies
-	  - /var/data/downloads:/downloads
+      - /var/data/downloads:/downloads
     ports:
       - 7878:7878
     restart: unless-stopped
@@ -37,7 +37,7 @@ services:
     volumes:
       - /var/data/config/sonarr:/config
       - /var/data/media/tv:/tv
-	  - /var/data/downloads:/downloads
+      - /var/data/downloads:/downloads
     ports:
       - 8989:8989
     restart: unless-stopped
@@ -50,7 +50,7 @@ services:
       - TZ=Australia/Sydney
     volumes:
       - /var/data/config/nzbget:/config
-	  - /var/data/downloads:/downloads
+      - /var/data/downloads:/downloads
     ports:
       - 6789:6789
     restart: unless-stopped

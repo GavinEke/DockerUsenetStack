@@ -22,7 +22,7 @@ services:
       - 32413:32413/udp
       - 32414:32414/udp
     networks:
-      - internal
+      - bridge
   radarr:
     image: lscr.io/linuxserver/radarr
     environment:
@@ -36,7 +36,7 @@ services:
     ports:
       - 7878:7878
     networks:
-      - internal
+      - bridge
   sonarr:
     image: lscr.io/linuxserver/sonarr
     environment:
@@ -50,7 +50,7 @@ services:
     ports:
       - 8989:8989
     networks:
-      - internal
+      - bridge
   nzbget:
     image: lscr.io/linuxserver/nzbget
     environment:
@@ -63,7 +63,7 @@ services:
     ports:
       - 6789:6789
     networks:
-      - internal
+      - bridge
   nzbhydra2:
     image: lscr.io/linuxserver/nzbhydra2
     environment:
@@ -76,7 +76,7 @@ services:
     ports:
       - 5076:5076
     networks:
-      - internal
+      - bridge
   ombi:
     image: lscr.io/linuxserver/ombi
     environment:
@@ -88,7 +88,7 @@ services:
     ports:
       - 3579:3579
     networks:
-      - internal
+      - bridge
   tautulli:
     image: lscr.io/linuxserver/tautulli
     environment:
@@ -100,7 +100,7 @@ services:
     ports:
       - 8181:8181
     networks:
-      - internal
+      - bridge
   nginx:
     image: lscr.io/linuxserver/nginx
     environment:
@@ -113,7 +113,4 @@ services:
       - 80:80
       - 443:443
     networks:
-      - internal
-networks:
-  # The presence of these objects is sufficient to define them
-  internal: {}
+      - bridge

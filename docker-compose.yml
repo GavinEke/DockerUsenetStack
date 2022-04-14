@@ -1,145 +1,106 @@
-version: "2"
+version: '2.1'
 services:
   plex:
-    image: linuxserver/plex
+    image: lscr.io/linuxserver/plex
     container_name: plex
     network_mode: host
     environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Australia/Sydney
+      - PUID=1001
+      - PGID=1001
       - VERSION=docker
     volumes:
-      - M:/Configs/plex:/config
-      - M:/TV Shows:/data/tvshows
-      - M:/Movies:/data/movies
-      - M:/Transcode:/transcode
-    ports:
-      - 32400:32400
-      - 32400:32400/udp
-      - 32469:32469
-      - 32469:32469/udp
-      - 5353:5353/udp
-      - 1900:1900/udp
+      - /var/data/config/plex:/config
+      - /var/data/media/tv:/tv
+      - /var/data/media/movies:/movies
     restart: unless-stopped
-
-  hydra2:
-    image: linuxserver/hydra2
-    container_name: hydra2
+  radarr:
+    image: lscr.io/linuxserver/radarr
+    container_name: radarr
     environment:
-      - PUID=1000
-      - PGID=1000
+      - PUID=1001
+      - PGID=1001
       - TZ=Australia/Sydney
     volumes:
-      - M:/Configs/hydra2:/config
-      - M:/Downloads:/downloads
+      - /var/data/config/radarr:/config
+      - /var/data/media/movies:/movies
+	  - /var/data/downloads:/downloads
     ports:
-      - 5076:5076
+      - 7878:7878
     restart: unless-stopped
-
+  sonarr:
+    image: lscr.io/linuxserver/sonarr
+    container_name: sonarr
+    environment:
+      - PUID=1001
+      - PGID=1001
+      - TZ=Australia/Sydney
+    volumes:
+      - /var/data/config/sonarr:/config
+      - /var/data/media/tv:/tv
+	  - /var/data/downloads:/downloads
+    ports:
+      - 8989:8989
+    restart: unless-stopped
   nzbget:
-    image: linuxserver/nzbget
+    image: lscr.io/linuxserver/nzbget
     container_name: nzbget
     environment:
-      - PUID=1000
-      - PGID=1000
+      - PUID=1001
+      - PGID=1001
       - TZ=Australia/Sydney
     volumes:
-      - M:/Configs/nzbget:/config
-      - M:/Downloads:/downloads
+      - /var/data/config/nzbget:/config
+	  - /var/data/downloads:/downloads
     ports:
       - 6789:6789
     restart: unless-stopped
-
-  sonarr:
-    image: linuxserver/sonarr
-    container_name: sonarr
+  nzbhydra2:
+    image: lscr.io/linuxserver/nzbhydra2
+    container_name: nzbhydra2
     environment:
-      - PUID=1000
-      - PGID=1000
+      - PUID=1001
+      - PGID=1001
       - TZ=Australia/Sydney
     volumes:
-      - M:/Configs/sonarr:/config
-      - M:/TV Shows:/tv
-      - M:/Downloads:/downloads
+      - /var/data/config/nzbhydra2:/config
+      - /var/data/downloads:/downloads
     ports:
-      - 8989:8989
-    links:
-      - plex
-      - hydra2
-      - nzbget
+      - 5076:5076
     restart: unless-stopped
-
-  radarr:
-    image: linuxserver/radarr
-    container_name: radarr
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Australia/Sydney
-    volumes:
-      - M:/Configs/radarr:/config
-      - M:/Movies:/movies
-      - M:/Downloads:/downloads
-    ports:
-      - 7878:7878
-    links:
-      - plex
-      - hydra2
-      - nzbget
-    restart: unless-stopped
-
   ombi:
-    image: linuxserver/ombi
+    image: lscr.io/linuxserver/ombi
     container_name: ombi
     environment:
-      - PUID=1000
-      - PGID=1000
+      - PUID=1001
+      - PGID=1001
       - TZ=Australia/Sydney
     volumes:
-      - M:/Configs/ombi:/config
+      - /var/data/config/ombi:/config
     ports:
       - 3579:3579
-    links:
-      - plex
-      - sonarr
-      - radarr
     restart: unless-stopped
-
   tautulli:
-    image: linuxserver/tautulli
+    image: lscr.io/linuxserver/tautulli
     container_name: tautulli
     environment:
-      - PUID=1000
-      - PGID=1000
+      - PUID=1001
+      - PGID=1001
       - TZ=Australia/Sydney
     volumes:
-      - M:/Configs/tautulli:/config
-      - M:/Configs/plex/Library/Application Support/Plex Media Server/Logs
+      - /var/data/config/tautulli:/config
     ports:
       - 8181:8181
-    links:
-      - plex
     restart: unless-stopped
-
   nginx:
-    image: linuxserver/nginx
+    image: lscr.io/linuxserver/nginx
     container_name: nginx
     environment:
-      - PUID=1000
-      - PGID=1000
+      - PUID=1001
+      - PGID=1001
       - TZ=Australia/Sydney
     volumes:
-      - M:/Configs/nginx:/config
+      - /var/data/config/nginx:/config
     ports:
       - 80:80
       - 443:443
-    links:
-      - plex
-      - hydra2
-      - nzbget
-      - sonarr
-      - radarr
-      - ombi
-      - tautulli
     restart: unless-stopped

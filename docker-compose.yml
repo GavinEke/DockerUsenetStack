@@ -1,116 +1,193 @@
-version: '3'
+---
+name: mediastack
+
+x-lsio-security: &lsio-security
+  user: "13000:13000"
+  read_only: true
+  security_opt:
+    - no-new-privileges=true
+  cap_drop:
+    - ALL
+  tmpfs:
+    - /run:uid=13000,gid=13000,exec,mode=0755
+    - /tmp:uid=13000,gid=13000,mode=1777
+  restart: unless-stopped
+
 services:
   plex:
-    image: lscr.io/linuxserver/plex
+    <<: *lsio-security
+    image: "lscr.io/linuxserver/plex:latest"
+    container_name: plex
     environment:
-      - PUID=1001
-      - PGID=1001
-      - VERSION=docker
+      TZ: "Australia/Sydney"
+      VERSION: "docker"
     volumes:
-      - /var/data/config/plex:/config
-      - /var/data/media/tv:/tv
-      - /var/data/media/movies:/movies
+      - "/srv/media/config/plex:/config"
+      - "/srv/media/media:/media:ro"
+      - "/srv/media/transcode:/transcode"
     ports:
-      - 32469:32469
-      - 32400:32400
-      - 32401:32401
-      - 3005:3005
-      - 8324:8324
-      - 1900:1900/udp
-      - 32410:32410/udp
-      - 32412:32412/udp
-      - 32413:32413/udp
-      - 32414:32414/udp
+      - "192.168.1.65:32400:32400/tcp"
     networks:
-      - bridge
-  radarr:
-    image: lscr.io/linuxserver/radarr
-    environment:
-      - PUID=1001
-      - PGID=1001
-      - TZ=Australia/Sydney
-    volumes:
-      - /var/data/config/radarr:/config
-      - /var/data/media/movies:/movies
-      - /var/data/downloads:/downloads
-    ports:
-      - 7878:7878
-    networks:
-      - bridge
-  sonarr:
-    image: lscr.io/linuxserver/sonarr
-    environment:
-      - PUID=1001
-      - PGID=1001
-      - TZ=Australia/Sydney
-    volumes:
-      - /var/data/config/sonarr:/config
-      - /var/data/media/tv:/tv
-      - /var/data/downloads:/downloads
-    ports:
-      - 8989:8989
-    networks:
-      - bridge
+      seerr_plex: {}
+      sonarr_plex: {}
+      radarr_plex: {}
+      egress_plex:
+        gw_priority: 1
+
   nzbget:
-    image: lscr.io/linuxserver/nzbget
+    <<: *lsio-security
+    image: "lscr.io/linuxserver/nzbget:latest"
+    container_name: nzbget
     environment:
-      - PUID=1001
-      - PGID=1001
-      - TZ=Australia/Sydney
+      TZ: "Australia/Sydney"
+      UMASK: "002"
     volumes:
-      - /var/data/config/nzbget:/config
-      - /var/data/downloads:/downloads
+      - "/srv/media/config/nzbget:/config"
+      - "/srv/media/usenet:/data/usenet"
     ports:
-      - 6789:6789
+      - "192.168.1.65:6789:6789/tcp"
     networks:
-      - bridge
-  nzbhydra2:
-    image: lscr.io/linuxserver/nzbhydra2
+      sonarr_nzbget: {}
+      radarr_nzbget: {}
+      egress_nzbget:
+        gw_priority: 1
+
+  sonarr:
+    <<: *lsio-security
+    image: "lscr.io/linuxserver/sonarr:latest"
+    container_name: sonarr
     environment:
-      - PUID=1001
-      - PGID=1001
-      - TZ=Australia/Sydney
+      TZ: "Australia/Sydney"
+      UMASK: "002"
     volumes:
-      - /var/data/config/nzbhydra2:/config
-      - /var/data/downloads:/downloads
+      - "/srv/media/config/sonarr:/config"
+      - "/srv/media/usenet:/data/usenet"
+      - "/srv/media/media/tv:/data/media/tv"
+    tmpfs:
+      - /run:uid=13000,gid=13000,exec,mode=0755
+      - /tmp:uid=13000,gid=13000,mode=1777
+      - /data/config:mode=000
+      - /data/transcode:mode=000
+      - /data/usenet/incomplete:mode=000
+      - /data/usenet/nzb:mode=000
+      - /data/usenet/queue:mode=000
+      - /data/usenet/tmp:mode=000
+      - /data/media/movies:mode=000
     ports:
-      - 5076:5076
+      - "192.168.1.65:8989:8989/tcp"
     networks:
-      - bridge
-  ombi:
-    image: lscr.io/linuxserver/ombi
+      seerr_sonarr: {}
+      prowlarr_sonarr: {}
+      sonarr_nzbget: {}
+      sonarr_plex: {}
+      egress_sonarr:
+        gw_priority: 1
+
+  radarr:
+    <<: *lsio-security
+    image: "lscr.io/linuxserver/radarr:latest"
+    container_name: radarr
     environment:
-      - PUID=1001
-      - PGID=1001
-      - TZ=Australia/Sydney
+      TZ: "Australia/Sydney"
+      UMASK: "002"
     volumes:
-      - /var/data/config/ombi:/config
+      - "/srv/media/config/radarr:/config"
+      - "/srv/media/usenet:/data/usenet"
+      - "/srv/media/media/movies:/data/media/movies"
+    tmpfs:
+      - /run:uid=13000,gid=13000,exec,mode=0755
+      - /tmp:uid=13000,gid=13000,mode=1777
+      - /data/config:mode=000
+      - /data/transcode:mode=000
+      - /data/usenet/incomplete:mode=000
+      - /data/usenet/nzb:mode=000
+      - /data/usenet/queue:mode=000
+      - /data/usenet/tmp:mode=000
+      - /data/media/tv:mode=000
     ports:
-      - 3579:3579
+      - "192.168.1.65:7878:7878/tcp"
     networks:
-      - bridge
-  tautulli:
-    image: lscr.io/linuxserver/tautulli
+      seerr_radarr: {}
+      prowlarr_radarr: {}
+      radarr_nzbget: {}
+      radarr_plex: {}
+      egress_radarr:
+        gw_priority: 1
+
+  prowlarr:
+    <<: *lsio-security
+    image: "lscr.io/linuxserver/prowlarr:latest"
+    container_name: prowlarr
     environment:
-      - PUID=1001
-      - PGID=1001
-      - TZ=Australia/Sydney
+      TZ: "Australia/Sydney"
     volumes:
-      - /var/data/config/tautulli:/config
+      - "/srv/media/config/prowlarr:/config"
     ports:
-      - 8181:8181
+      - "192.168.1.65:9696:9696/tcp"
     networks:
-      - bridge
-  nginx:
-    image: lscr.io/linuxserver/nginx
+      prowlarr_sonarr: {}
+      prowlarr_radarr: {}
+      egress_prowlarr:
+        gw_priority: 1
+
+  seerr:
+    image: "ghcr.io/seerr-team/seerr:latest"
+    container_name: seerr
+    user: "13000:13000"
+    init: true
+    read_only: true
+    security_opt:
+      - no-new-privileges=true
+    cap_drop:
+      - ALL
     environment:
-      - PUID=1001
-      - PGID=1001
-      - TZ=Australia/Sydney
+      TZ: "Australia/Sydney"
+      LOG_LEVEL: "info"
+      PORT: "5055"
     volumes:
-      - /var/data/config/nginx:/config
+      - "/srv/media/config/seerr:/app/config"
+    tmpfs:
+      - /tmp:uid=13000,gid=13000,mode=1777
     ports:
-      - 80:80
-      - 443:443
+      - "127.0.0.1:5055:5055/tcp"
+      - "192.168.1.65:5055:5055/tcp"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:5055/api/v1/settings/public || exit 1"]
+      start_period: 20s
+      timeout: 3s
+      interval: 15s
+      retries: 3
+    restart: unless-stopped
     networks:
-      - bridge
+      seerr_plex: {}
+      seerr_sonarr: {}
+      seerr_radarr: {}
+      egress_seerr:
+        gw_priority: 1
+
+networks:
+  seerr_plex:
+    internal: true
+  seerr_sonarr:
+    internal: true
+  seerr_radarr:
+    internal: true
+  prowlarr_sonarr:
+    internal: true
+  prowlarr_radarr:
+    internal: true
+  sonarr_nzbget:
+    internal: true
+  sonarr_plex:
+    internal: true
+  radarr_nzbget:
+    internal: true
+  radarr_plex:
+    internal: true
+
+  egress_plex: {}
+  egress_seerr: {}
+  egress_prowlarr: {}
+  egress_sonarr: {}
+  egress_radarr: {}
+  egress_nzbget: {}

@@ -7,12 +7,12 @@ flowchart TB
 
     subgraph Internet["Internet / Clients"]
         PlexClients["📱 💻 📺<br/>Plex Clients"]
-        OmbiUsers["🌐<br/>Ombi Users"]
+        SeerrUsers["🌐<br/>Seerr Users"]
     end
 
-    Cloudflare["☁️ Cloudflare Edge<br/>ombi.yourdomain.com"]
+    Cloudflare["☁️ Cloudflare Edge<br/>requests.yourdomain.com"]
 
-    OmbiUsers -->|"HTTPS 443"| Cloudflare
+    SeerrUsers -->|"HTTPS 443"| Cloudflare
 
 
     %% =========================================================
@@ -29,15 +29,15 @@ flowchart TB
             direction TB
             
             Plex["🟨 Plex<br/>Media Server"]
-            Ombi["⚫ Ombi<br/>Requests UI"]
+            Seerr["⚫ Seerr<br/>Requests UI"]
             Sonarr["🔵 Sonarr<br/>TV Automation"]
             Radarr["🟡 Radarr<br/>Movie Automation"]
             Prowlarr["🔷 Prowlarr<br/>Indexer Management"]
             NZBGet["🟢 NZBGet<br/>Download Client"]
 
             %% API FLOWS
-            Ombi --> Sonarr
-            Ombi --> Radarr
+            Seerr --> Sonarr
+            Seerr --> Radarr
 
             Sonarr --> NZBGet
             Sonarr --> Plex
@@ -51,7 +51,7 @@ flowchart TB
 
         PlexPort -->|"Plex:32400"| Plex
 
-        Cloudflared -->|"Ombi:3579"| Ombi
+        Cloudflared -->|"Seerr:5055"| Seerr
     end
 
 
@@ -69,7 +69,7 @@ flowchart TB
     %% =========================================================
 
     classDef plex fill:#f3c623,stroke:#222,color:#111;
-    classDef ombi fill:#333,stroke:#111,color:#fff;
+    classDef seerr fill:#333,stroke:#111,color:#fff;
     classDef arr fill:#dff0d8,stroke:#609b50,color:#111;
     classDef nzb fill:#dff5d8,stroke:#45933f,color:#111;
     classDef cloud fill:#f4a623,stroke:#cc7600,color:#111;
@@ -77,7 +77,7 @@ flowchart TB
     classDef port fill:#ffe6e6,stroke:#bb4444,color:#111;
 
     class Plex plex;
-    class Ombi ombi;
+    class Seerr seerr;
     class Sonarr,Radarr,Prowlarr arr;
     class NZBGet nzb;
     class Cloudflare cloud;

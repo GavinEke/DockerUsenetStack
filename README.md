@@ -45,8 +45,8 @@ flowchart TB
             Radarr --> NZBGet
             Radarr --> Plex
 
-            Prowlarr --> Sonarr
-            Prowlarr --> Radarr
+            Prowlarr <--> Sonarr
+            Prowlarr <--> Radarr
         end
 
         PlexPort -->|"Plex:32400"| Plex

@@ -38,6 +38,7 @@ flowchart TB
             %% API FLOWS
             Seerr --> Sonarr
             Seerr --> Radarr
+            Seerr --> Plex
 
             Sonarr --> NZBGet
             Sonarr --> Plex
@@ -61,7 +62,7 @@ flowchart TB
 
     PlexClients -->|"Plex Streaming<br/>TCP 32400"| PlexPort
 
-    Cloudflared -.->|"Outbound Tunnel<br/>No inbound port required"| Cloudflare
+    Cloudflared -.->|"Outbound Tunnel"| Cloudflare
 
 
     %% =========================================================

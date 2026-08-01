@@ -16,6 +16,7 @@ x-lsio-security: &lsio-security
 services:
   plex:
     <<: *lsio-security
+    read_only: false
     image: "lscr.io/linuxserver/plex:latest"
     container_name: plex
     environment:
